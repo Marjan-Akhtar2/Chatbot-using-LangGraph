@@ -5,7 +5,8 @@ from langchain_core.messages import BaseMessage, HumanMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
-from langgraph.checkpoint.memory import MemorySaver
+from langgraph.checkpoint.sqlite import SqliteSaver
+import sqlite3
 
 # Environment variables load 
 load_dotenv()
@@ -26,7 +27,9 @@ llm = ChatGoogleGenerativeAI(
 class ChatState(TypedDict): # define what data flow in whole chatbot workflow
     messages: Annotated[list[BaseMessage], add_messages]
 
-checkpointer = MemorySaver()
+conn = sqlite3.connect(database='chatbot.db', check_same_thread = False)
+
+checkpointer = SqliteSaver(conn=conn)
 
 # Graph Node Definition
 def chat_node(state: ChatState):
@@ -66,9 +69,14 @@ def start_chatbot():
             clean_text = raw_content
 
         print(f"\nChatbot: {clean_text}\n")
-        
+
     # print(chatbot.get_state(config=config))
 
+def retrieve_all_threads():
+    all_threads = set()
+    for checkpoint in checkpointer.list(None):
+        all_threads.add(checkpoint.config['configurable']['thread_id'])
+    return list(all_threads)
 if __name__ == "__main__":
     start_chatbot()
     

@@ -1,5 +1,5 @@
 import streamlit as st
-from Langgraph_backend import chatbot
+from Langgraph_backend import chatbot, retrieve_all_threads
 from langchain_core.messages import HumanMessage
 import uuid
 
@@ -25,7 +25,7 @@ def load_conv(t_id):
 # ************************ SESSION SETUP **************************************
 
 if 'chat_threads' not in st.session_state:
-    st.session_state['chat_threads'] = []
+    st.session_state['chat_threads'] = retrieve_all_threads()
 
 if 'thread_id' not in st.session_state:
     st.session_state['thread_id'] = generate_thread_id()
